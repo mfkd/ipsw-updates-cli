@@ -164,7 +164,6 @@ class EntryMetadata:
     device: str
     description_summary: str
     is_prerelease: bool
-    release_channel: str
 
 
 def normalize_platform_key(label: str) -> str:
@@ -172,13 +171,11 @@ def normalize_platform_key(label: str) -> str:
     return PLATFORM_ALIASES.get(key, key if key in PLATFORM_COLOR_MAP else "other")
 
 
-def detect_release_channel(text: str) -> str:
+def _is_prerelease(text: str) -> bool:
     lowered = text.lower()
     if re.search(r"\b(rc|release candidate)\b", lowered):
-        return "rc"
-    if "beta" in lowered:
-        return "beta"
-    return "stable"
+        return True
+    return "beta" in lowered
 
 
 RELEASE_SUFFIX_RE = re.compile(r"\s+released\s*$", re.IGNORECASE)
@@ -215,8 +212,7 @@ def extract_entry_metadata(entry: FeedEntry) -> EntryMetadata:
     platform_label = tokens[0].strip() if tokens else main_part
     version = tokens[1].strip() if len(tokens) > 1 else ""
     platform_key = normalize_platform_key(platform_label)
-    channel = detect_release_channel(raw_title)
-    is_prerelease = channel != "stable"
+    is_prerelease = _is_prerelease(raw_title)
     description_summary = _summarize_description(entry.description)
 
     return EntryMetadata(
@@ -227,7 +223,6 @@ def extract_entry_metadata(entry: FeedEntry) -> EntryMetadata:
         device=device,
         description_summary=description_summary,
         is_prerelease=is_prerelease,
-        release_channel=channel,
     )
 
 
