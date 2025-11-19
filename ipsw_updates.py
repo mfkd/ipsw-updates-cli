@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
-import os
 import re
 import shutil
 import sys
@@ -17,7 +15,6 @@ from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
 DEFAULT_FEED_URL = "https://ipsw.me/timeline.rss"
-DEFAULT_STATE_FILE = os.path.expanduser("~/.ipsw_timeline_state.json")
 USER_AGENT = "ipsw-timeline-cli/1.0 (+https://ipsw.me)"
 ANSI_RESET = "\033[0m"
 ANSI_BOLD = "\033[1m"
@@ -148,37 +145,14 @@ def filter_entries(
     entries: Iterable[FeedEntry],
     *,
     contains: Optional[str] = None,
-    newer_than_guid: Optional[str] = None,
 ) -> List[FeedEntry]:
     contains_lower = contains.lower() if contains else None
     filtered: List[FeedEntry] = []
     for entry in entries:
         if contains_lower and contains_lower not in entry.title.lower():
             continue
-        if newer_than_guid and entry.guid == newer_than_guid:
-            break
         filtered.append(entry)
     return filtered
-
-
-def load_state(path: str) -> Optional[str]:
-    try:
-        with open(path, "r", encoding="utf-8") as handle:
-            data = json.load(handle)
-            last_guid = data.get("last_guid")
-            if last_guid:
-                return str(last_guid)
-    except FileNotFoundError:
-        return None
-    except (OSError, json.JSONDecodeError):
-        return None
-    return None
-
-
-def save_state(path: str, latest_guid: str) -> None:
-    data = {"last_guid": latest_guid, "updated_at": datetime.now(timezone.utc).isoformat()}
-    with open(path, "w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2)
 
 
 @dataclass
@@ -399,24 +373,6 @@ def run_cli(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("-f", "--feed-url", default=DEFAULT_FEED_URL, help="RSS feed to read")
     parser.add_argument("-l", "--limit", type=int, default=15, help="Maximum number of entries to show")
     parser.add_argument("-c", "--contains", help="Only show entries whose title includes this string (case-insensitive)")
-    parser.add_argument(
-        "-s",
-        "--state-file",
-        default=DEFAULT_STATE_FILE,
-        help="Where to store the last seen GUID (default: %(default)s)",
-    )
-    parser.add_argument(
-        "-u",
-        "--only-new",
-        action="store_true",
-        help="Only display entries newer than the last saved GUID",
-    )
-    parser.add_argument(
-        "-r",
-        "--remember",
-        action="store_true",
-        help="Persist the newest GUID after displaying entries",
-    )
     parser.add_argument("-t", "--timeout", type=float, default=10.0, help="Network timeout in seconds")
     parser.add_argument(
         "-C",
@@ -435,21 +391,11 @@ def run_cli(argv: Optional[List[str]] = None) -> int:
 
     entries = parse_feed(raw_feed)
 
-    last_guid: Optional[str] = None
-    if args.only_new or args.remember:
-        last_guid = load_state(args.state_file)
-
-    filtered = filter_entries(entries, contains=args.contains, newer_than_guid=last_guid)
+    filtered = filter_entries(entries, contains=args.contains)
     if args.limit:
         filtered = filtered[: args.limit]
 
     print(render(filtered, color_mode=args.color))
-
-    if filtered and args.remember:
-        try:
-            save_state(args.state_file, filtered[0].guid)
-        except OSError as exc:
-            print(f"Warning: failed to save state to {args.state_file}: {exc}", file=sys.stderr)
 
     return 0
 
