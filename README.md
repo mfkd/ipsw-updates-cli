@@ -20,10 +20,10 @@ Basic usage:
 
 ```bash
 python3 ipsw_updates.py                      # show latest 15 entries
-python3 ipsw_updates.py --limit 5            # show only 5 entries
-python3 ipsw_updates.py --show-links         # include the link column
-python3 ipsw_updates.py --contains "iOS 17"  # filter to entries containing "iOS 17" in the title
-python3 ipsw_updates.py --color always       # force ANSI colors (auto/always/never)
+python3 ipsw_updates.py -l 5                 # show only 5 entries (short: -l / long: --limit)
+python3 ipsw_updates.py -k                   # include the link column (--show-links)
+python3 ipsw_updates.py -c "iOS 17"          # filter to entries containing "iOS 17" in the title
+python3 ipsw_updates.py -C always            # force ANSI colors (auto/always/never)
 ```
 
 Tracking unread items:

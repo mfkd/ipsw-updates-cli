@@ -298,27 +298,31 @@ def _pad(text: str, width: int) -> str:
 
 def run_cli(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Show ipsw.me timeline updates in your terminal")
-    parser.add_argument("--feed-url", default=DEFAULT_FEED_URL, help="RSS feed to read")
-    parser.add_argument("--limit", type=int, default=15, help="Maximum number of entries to show")
-    parser.add_argument("--contains", help="Only show entries whose title includes this string (case-insensitive)")
+    parser.add_argument("-f", "--feed-url", default=DEFAULT_FEED_URL, help="RSS feed to read")
+    parser.add_argument("-l", "--limit", type=int, default=15, help="Maximum number of entries to show")
+    parser.add_argument("-c", "--contains", help="Only show entries whose title includes this string (case-insensitive)")
     parser.add_argument(
+        "-s",
         "--state-file",
         default=DEFAULT_STATE_FILE,
         help="Where to store the last seen GUID (default: %(default)s)",
     )
     parser.add_argument(
+        "-u",
         "--only-new",
         action="store_true",
         help="Only display entries newer than the last saved GUID",
     )
     parser.add_argument(
+        "-r",
         "--remember",
         action="store_true",
         help="Persist the newest GUID after displaying entries",
     )
-    parser.add_argument("--show-links", action="store_true", help="Show entry links in the table")
-    parser.add_argument("--timeout", type=float, default=10.0, help="Network timeout in seconds")
+    parser.add_argument("-k", "--show-links", action="store_true", help="Show entry links in the table")
+    parser.add_argument("-t", "--timeout", type=float, default=10.0, help="Network timeout in seconds")
     parser.add_argument(
+        "-C",
         "--color",
         choices=["auto", "always", "never"],
         default="auto",
