@@ -24,7 +24,7 @@ ANSI_BOLD = "\033[1m"
 ANSI_DIM = "\033[2m"
 
 PLATFORM_COLOR_MAP = {
-    "ios": "\033[33m",  # yellow
+    "ios": "\033[93m",  # bright yellow
     "ipados": "\033[34m",  # blue
     "macos": "\033[32m",  # green
     "watchos": "\033[35m",  # magenta
