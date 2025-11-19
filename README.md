@@ -5,7 +5,7 @@
 ## Features
 
 - Fetches the ipsw.me timeline RSS feed with no external dependencies (stdlib only).
-- Width-aware table output with optional link column.
+- Width-aware, colorized table output with optional link column (colors auto-disable when piped).
 - Filter entries by substring via `--contains`.
 - Remember the last-seen GUID (`--remember`) and only show newer items on future runs (`--only-new`).
 - Configurable feed URL, timeout, state file location, and max results.
@@ -23,6 +23,7 @@ python3 ipsw_updates.py                      # show latest 15 entries
 python3 ipsw_updates.py --limit 5            # show only 5 entries
 python3 ipsw_updates.py --show-links         # include the link column
 python3 ipsw_updates.py --contains "iOS 17"  # filter to entries containing "iOS 17" in the title
+python3 ipsw_updates.py --color always       # force ANSI colors (auto/always/never)
 ```
 
 Tracking unread items:
@@ -32,6 +33,20 @@ python3 ipsw_updates.py --only-new --remember
 ```
 
 The command above keeps a JSON file at `~/.ipsw_timeline_state.json` (override with `--state-file`) storing the latest GUID so future runs with `--only-new` only display new releases.
+
+## Color Legend
+
+The first column is color-coded by platform to make scanning easier:
+
+- iOS / iPhone — yellow
+- iPadOS / iPad — blue
+- macOS — green
+- watchOS — magenta
+- tvOS / HomePod / audioOS — cyan
+- visionOS — bright white
+- anything else — gray
+
+Pre-release builds (beta / RC) render the version text in bold.
 
 ## Notes
 
