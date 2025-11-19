@@ -12,7 +12,6 @@
 python3 ipsw_updates.py            # show newest 15 entries
 python3 ipsw_updates.py -l 5       # limit results
 python3 ipsw_updates.py -c "iOS"   # filter titles
-python3 ipsw_updates.py -k         # include link column
 python3 ipsw_updates.py --only-new --remember  # track unread items
 ```
 

@@ -33,13 +33,11 @@ class TableLayout:
     platform_col: int
     version_col: int
     device_col: int
-    link_col: int
     gap: int
-    show_links: bool
 
     @property
     def column_count(self) -> int:
-        return 5 + (1 if self.show_links else 0)
+        return 5
 
     @property
     def total_gap(self) -> int:
@@ -299,17 +297,16 @@ def emphasize_numbers(text: str) -> str:
     return "".join(result)
 
 
-def _compute_layout(term_width: int, show_links: bool) -> TableLayout:
+def _compute_layout(term_width: int) -> TableLayout:
     date_col_width = 20
     stripe_col_width = 1
     platform_col_width = 12
     version_col_width = 24
-    link_col_width = 36 if show_links else 0
     gap = 2
-    column_count = 5 + (1 if show_links else 0)
+    column_count = 5
     total_gap = gap * (column_count - 1)
     device_min_width = 16
-    consumed = date_col_width + stripe_col_width + platform_col_width + version_col_width + link_col_width
+    consumed = date_col_width + stripe_col_width + platform_col_width + version_col_width
     device_col_width = max(device_min_width, term_width - (consumed + total_gap))
     return TableLayout(
         date_col=date_col_width,
@@ -317,9 +314,7 @@ def _compute_layout(term_width: int, show_links: bool) -> TableLayout:
         platform_col=platform_col_width,
         version_col=version_col_width,
         device_col=device_col_width,
-        link_col=link_col_width,
         gap=gap,
-        show_links=show_links,
     )
 
 
@@ -329,12 +324,12 @@ def _shorten(text: str, width: int) -> str:
     return text[: width - 1] + "…"
 
 
-def render(entries: List[FeedEntry], *, show_links: bool, color_mode: str) -> str:
+def render(entries: List[FeedEntry], *, color_mode: str) -> str:
     if not entries:
         return "No entries to display."
 
     term_width = shutil.get_terminal_size((100, 20)).columns
-    layout = _compute_layout(term_width, show_links)
+    layout = _compute_layout(term_width)
     colorizer = Colorizer(mode=color_mode, stream=sys.stdout)
 
     lines = []
@@ -345,8 +340,6 @@ def render(entries: List[FeedEntry], *, show_links: bool, color_mode: str) -> st
         _pad("Version (Build)", layout.version_col),
         _pad("Device / Notes", layout.device_col),
     ]
-    if show_links:
-        header_parts.append(_pad("Link", layout.link_col))
     lines.append(layout.join(header_parts))
     header_width = sum(len(part) for part in header_parts) + layout.total_gap
     lines.append("-" * min(term_width, header_width))
@@ -384,9 +377,6 @@ def render(entries: List[FeedEntry], *, show_links: bool, color_mode: str) -> st
             version_cell,
             device_cell,
         ]
-        if show_links:
-            link_text = _shorten(entry.link or entry.guid, layout.link_col)
-            row.append(_pad(link_text, layout.link_col))
         lines.append(layout.join(row))
 
     return "\n".join(lines)
@@ -427,7 +417,6 @@ def run_cli(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         help="Persist the newest GUID after displaying entries",
     )
-    parser.add_argument("-k", "--show-links", action="store_true", help="Show entry links in the table")
     parser.add_argument("-t", "--timeout", type=float, default=10.0, help="Network timeout in seconds")
     parser.add_argument(
         "-C",
@@ -454,7 +443,7 @@ def run_cli(argv: Optional[List[str]] = None) -> int:
     if args.limit:
         filtered = filtered[: args.limit]
 
-    print(render(filtered, show_links=args.show_links, color_mode=args.color))
+    print(render(filtered, color_mode=args.color))
 
     if filtered and args.remember:
         try:
